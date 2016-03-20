@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -13,15 +14,18 @@ import javax.swing.text.BadLocationException;
 
 public class Calculator extends JFrame implements ActionListener{
 	
+	private final int AMOUNT_NUMBERS = 10;
+	private final int STAGE_NO_NUMBER = 0;
+	private final int STAGE_FIRST_NUMBER_IN = 1;
+	private final int STAGE_WAITING_SECOND_NUMBER = 2;
+	private final int STAGE_SECOND_NUMBER = 3;
+	
 	private JTextArea display;
 	private JButton buttons[];
 	private JButton btnClear, btnEquals, btnDivide, btnMultiply, btnAdd, btnSubtract;
-	
-	private boolean hasPreviousNumber = false;
-	private boolean justDidOperation = false;
 	private double previousNumber;
+	private int stage = STAGE_NO_NUMBER;
 	
-	private final int AMOUNT_NUMBERS = 10;
 
 	public Calculator() {
 		super("Calculator");
@@ -77,49 +81,93 @@ public class Calculator extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		char triggerChar = ((JButton)e.getSource()).getText().charAt(0);
 		
-		if (Character.isDigit(triggerChar))
+		if (Character.isDigit(triggerChar)) {
 			display.append(String.valueOf(triggerChar));
+			stage = (stage == STAGE_NO_NUMBER) ? STAGE_FIRST_NUMBER_IN : STAGE_SECOND_NUMBER;
+		}
 		else {
 			switch (triggerChar) {
 				case 'C':
 					display.setText("");
-					hasPreviousNumber = false;
-					justDidOperation = false;
+					stage = STAGE_NO_NUMBER;
 					break;
 				
 				case '+':
-					Double newNumber = extractNumberFromDisplay('+', display);
-					if (newNumber == null) return; 
+					// hitting operation button without numbers do nothing
+					if (stage == STAGE_NO_NUMBER) return;
 					
-					if (!hasPreviousNumber && newNumber != null) {
-						hasPreviousNumber = true;
+					Double newNumber = extractNumberFromDisplay(display);
+
+					if (stage == STAGE_FIRST_NUMBER_IN) {
+						display.append(" +\n");
 						previousNumber = newNumber;
+						stage = STAGE_WAITING_SECOND_NUMBER;
 					}
-					else 
-						if (!justDidOperation) {
-							previousNumber += newNumber;
-							justDidOperation = true;
-							display.append(String.valueOf(previousNumber));
+					else if (stage == STAGE_WAITING_SECOND_NUMBER) {
+						int offset, lineEndPos = 0;
+						try {
+							offset = display.getLineOfOffset(display.getCaretPosition());
+							lineEndPos = display.getLineEndOffset(offset);
+						} catch (BadLocationException e1) {
+							e1.printStackTrace();
 						}
+
+						display.replaceRange(" +\n", lineEndPos - 3, lineEndPos);
+					}
+					else {	// STAGE_SECOND_NUMBER
+						previousNumber += newNumber;
+						display.append(" =\n" + previousNumber + " +\n");
+						stage = STAGE_WAITING_SECOND_NUMBER;
+					}
+					
+					/*
+					if (operationSlot != NO_OPERATION) {
+						display.append(" =\n");
+						
+						try {
+							previousNumber = operate(previousNumber, newNumber, operationSlot);
+							display.append(Double.toString(previousNumber));
+						}
+						catch (Exception ex) {
+							display.append("NaN");
+						}
+						
+						operationSlot = NO_OPERATION;
+					}
+					else {
+						operationSlot += '+';
+					}
+					*/
+						
 					break;
 			}
 			
 		}
-			
-			
 	}
 	
-	private Double extractNumberFromDisplay(char operator, JTextArea display) {
+	private double operate(double a, double b, char operator) {
+		double result = 0;
+		
+		switch (operator) {
+			case '+': result = a + b; break;
+			case '-': result = a - b; break;
+			case '*': result = a * b; break;
+			case '/': result = a / b; break;
+		}
+		
+		return result;
+	}
+	
+	private Double extractNumberFromDisplay(JTextArea display) {
 		try {
 			int offset = display.getLineOfOffset(display.getCaretPosition());
 			int indexNumberStart = display.getLineStartOffset(offset);
 			int indexNumberEnd = display.getLineEndOffset(offset);
 			
 			String numberAsString = display.getText(indexNumberStart, indexNumberEnd-indexNumberStart);
-			if (numberAsString.length() > 0) {
-				display.append(" " + operator + "\n");
+			if (numberAsString.length() > 0) 
 				return Double.valueOf(numberAsString);
-			}
+			
 		} catch (BadLocationException e1) { 
 			// complying with checked exception. It will never happen.
 		}
