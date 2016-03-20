@@ -2,6 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.BinaryOperator;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,11 +20,14 @@ public class Calculator extends JFrame implements ActionListener{
 	private final int STAGE_FIRST_NUMBER_IN = 1;
 	private final int STAGE_WAITING_SECOND_NUMBER = 2;
 	private final int STAGE_SECOND_NUMBER = 3;
+	private final char NO_OPERATOR = 'X';
 	
 	private JTextArea display;
 	private JButton buttons[];
 	private JButton btnClear, btnEquals, btnDivide, btnMultiply, btnAdd, btnSubtract;
 	private double previousNumber;
+	
+	private char operatorSlot = NO_OPERATOR;
 	private int stage = STAGE_NO_NUMBER;
 	
 
@@ -81,83 +85,71 @@ public class Calculator extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		char triggerChar = ((JButton)e.getSource()).getText().charAt(0);
 		
+		BinaryOperator<Double> addDoubles = (a,b) -> a + b;
+		
 		if (Character.isDigit(triggerChar)) {
 			display.append(String.valueOf(triggerChar));
 			stage = (stage == STAGE_NO_NUMBER) ? STAGE_FIRST_NUMBER_IN : STAGE_SECOND_NUMBER;
 		}
-		else {
-			switch (triggerChar) {
-				case 'C':
-					display.setText("");
-					stage = STAGE_NO_NUMBER;
-					break;
+		else if (triggerChar == 'C') {
+			display.setText("");
+			stage = STAGE_NO_NUMBER;
+		}
+		else {	// operators
+			if (stage == STAGE_NO_NUMBER) return;
+			
+			Double newNumber = extractNumberFromDisplay(display);
+			
+			if (stage == STAGE_FIRST_NUMBER_IN && triggerChar != '=') {
+				display.append(" " + triggerChar + "\n");
+				previousNumber = newNumber;
+				stage = STAGE_WAITING_SECOND_NUMBER;
+				operatorSlot = triggerChar;
+			}
+			else if (stage == STAGE_WAITING_SECOND_NUMBER && triggerChar != '=') {
+				int offset, lineEndPos = 0;
+				try {
+					offset = display.getLineOfOffset(display.getCaretPosition());
+					lineEndPos = display.getLineEndOffset(offset);
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+
+				operatorSlot = triggerChar;
+				display.replaceRange(" " + operatorSlot + "\n", lineEndPos - 3, lineEndPos);	
+			}
+			else if (stage == STAGE_SECOND_NUMBER) {
 				
-				case '+':
-					// hitting operation button without numbers do nothing
-					if (stage == STAGE_NO_NUMBER) return;
-					
-					Double newNumber = extractNumberFromDisplay(display);
-
-					if (stage == STAGE_FIRST_NUMBER_IN) {
-						display.append(" +\n");
-						previousNumber = newNumber;
-						stage = STAGE_WAITING_SECOND_NUMBER;
-					}
-					else if (stage == STAGE_WAITING_SECOND_NUMBER) {
-						int offset, lineEndPos = 0;
-						try {
-							offset = display.getLineOfOffset(display.getCaretPosition());
-							lineEndPos = display.getLineEndOffset(offset);
-						} catch (BadLocationException e1) {
-							e1.printStackTrace();
-						}
-
-						display.replaceRange(" +\n", lineEndPos - 3, lineEndPos);
-					}
-					else {	// STAGE_SECOND_NUMBER
-						previousNumber += newNumber;
-						display.append(" =\n" + previousNumber + " +\n");
-						stage = STAGE_WAITING_SECOND_NUMBER;
+				if (triggerChar != '=')
+					operatorSlot = triggerChar;
+				
+				try {
+					switch (operatorSlot) {
+						case '+': previousNumber += newNumber; break;
+						case '-': previousNumber -= newNumber; break;
+						case '*': previousNumber *= newNumber; break;
+						case '/': previousNumber /= newNumber; break;
 					}
 					
-					/*
-					if (operationSlot != NO_OPERATION) {
-						display.append(" =\n");
-						
-						try {
-							previousNumber = operate(previousNumber, newNumber, operationSlot);
-							display.append(Double.toString(previousNumber));
-						}
-						catch (Exception ex) {
-							display.append("NaN");
-						}
-						
-						operationSlot = NO_OPERATION;
+					if (triggerChar != '=') {
+						display.append(" =\n" + previousNumber + " " + operatorSlot + "\n");
+						stage = STAGE_WAITING_SECOND_NUMBER;
 					}
 					else {
-						operationSlot += '+';
+						display.append(" =\n" + previousNumber);
+						stage = STAGE_FIRST_NUMBER_IN;
 					}
-					*/
-						
-					break;
+				}
+				catch (Exception ex) {
+					display.append("\nNaN");
+					stage = STAGE_NO_NUMBER;
+					operatorSlot = NO_OPERATOR;
+				}
 			}
-			
 		}
 	}
 	
-	private double operate(double a, double b, char operator) {
-		double result = 0;
-		
-		switch (operator) {
-			case '+': result = a + b; break;
-			case '-': result = a - b; break;
-			case '*': result = a * b; break;
-			case '/': result = a / b; break;
-		}
-		
-		return result;
-	}
-	
+	/* HELPER METHODS */
 	private Double extractNumberFromDisplay(JTextArea display) {
 		try {
 			int offset = display.getLineOfOffset(display.getCaretPosition());
@@ -175,7 +167,6 @@ public class Calculator extends JFrame implements ActionListener{
 		return null;
 	}
 	
-	/* HELPER METHODS */
 	private JButton buttonFactory(JButton instanceHolder, String text) {
 		instanceHolder = new JButton(text);
 		instanceHolder.addActionListener(this);
