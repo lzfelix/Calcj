@@ -1,7 +1,12 @@
-
 public class RunMe {
 	
 	public static void main(String args[]) {
-		Calculator calc = new Calculator();
+		Model model = new Model();
+		Controller controller = new Controller();
+		
+		controller.addModel(model);
+		
+		Calculator calc = new Calculator(controller);
+		model.subscribe(calc);
 	}
 }
