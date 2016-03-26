@@ -47,4 +47,9 @@ public class CalculatorObservable {
 		for (CalculatorObserver cobs : observers)
 			cobs.addOperator(c);
 	}
+	
+	public void notifyInvertSignal(boolean isNegative) {
+		for (CalculatorObserver cobs : observers)
+			cobs.invertSignal(isNegative);
+	}
 }

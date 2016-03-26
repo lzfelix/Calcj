@@ -19,9 +19,12 @@ public class Controller implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		char triggerChar = ((JButton)e.getSource()).getText().charAt(0);
 		
-		if (triggerChar == 'C')
-			model.resetCalculator();
-		else
-			model.notifyInputChar(triggerChar);
+		switch (triggerChar) {
+			case 'C': model.resetCalculator(); break;
+			case '<': model.deleteDigit(); break;
+			case '±': model.invertSignal(); break;
+			default:
+				model.notifyInputChar(triggerChar);
+		}
 	}
 }

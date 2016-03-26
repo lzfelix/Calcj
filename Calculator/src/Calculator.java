@@ -18,8 +18,7 @@ import calc_mvc.CalculatorObserver;
  */
 @SuppressWarnings("serial")
 public class Calculator extends JFrame implements CalculatorObserver {
-	private JTextArea display;
-	
+	private JTextArea display;	
 	private Controller controller;
 
 	public Calculator(Controller controller) {
@@ -46,6 +45,7 @@ public class Calculator extends JFrame implements CalculatorObserver {
 		display = new JTextArea(8, 25);
 		JScrollPane jsp = new JScrollPane(display);
 		jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(jsp, BorderLayout.NORTH);
 		
 		JPanel pnlButtons = new JPanel(new GridBagLayout());
@@ -54,7 +54,7 @@ public class Calculator extends JFrame implements CalculatorObserver {
 		// adding meta keys and division
 		pnlButtons.add(buttonFactory("C"), gbc);
 		pnlButtons.add(buttonFactory("<"), gbc);
-		pnlButtons.add(buttonFactory("+-"), gbc);
+		pnlButtons.add(buttonFactory("±"), gbc);
 		pnlButtons.add(buttonFactory("/"), gbc);
 		
 		// numbers
@@ -136,17 +136,37 @@ public class Calculator extends JFrame implements CalculatorObserver {
 		try {
 			offset = display.getLineOfOffset(display.getCaretPosition());
 			lineEndPos = display.getLineEndOffset(offset);
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
+			
+			display.replaceRange("", lineEndPos - amount, lineEndPos);
+		} catch (BadLocationException e) {
+			e.printStackTrace();	// it will never happen
 		}
-		
-		display.replaceRange("", lineEndPos - amount, lineEndPos);
 	}
-
 	
 	@Override
 	public void addOperator(char c) {
 		display.append(" " + String.valueOf(c) + "\n");
 	}
 
+	public void invertSignal(boolean isNegative) {
+		int lineBeginPos, offset;
+		
+		try {
+			offset = display.getLineOfOffset(display.getCaretPosition());
+			lineBeginPos = display.getLineStartOffset(offset);
+		
+			if (isNegative) {
+				display.setCaretPosition(lineBeginPos);
+				display.insert("-", display.getCaretPosition());
+			}
+			else
+				display.replaceRange("", lineBeginPos, lineBeginPos + 1);
+			
+			display.setCaretPosition(display.getDocument().getLength());
+		}
+		catch (BadLocationException e) {
+			e.printStackTrace(); // it will never happen
+		}
+	}
+	
 }

@@ -6,8 +6,12 @@ public class Model extends CalculatorObservable{
 	private final char NO_OPERATOR = 'X';
 	
 	private States calculatorState;
+	
 	private StringBuilder numberBuffer;
 	private double previousNumber;
+	private boolean numberHasDot;
+	private boolean isNumberNegative;
+	
 	private char operatorSlot = NO_OPERATOR;
 	
 	char operators[] = {'+', '-', '*', '/'};
@@ -17,30 +21,56 @@ public class Model extends CalculatorObservable{
 		resetCalculator();
 	}
 
+	public void invertSignal() {
+		isNumberNegative = !isNumberNegative;
+		notifyInvertSignal(isNumberNegative);
+	}
+	
 	public void resetCalculator() {
 		previousNumber = 0;
 		calculatorState = States.WAITING_NUMBER;
 		
 		// clear the numbers' buffer
 		numberBuffer.setLength(0);
+		numberHasDot = false;
+		isNumberNegative = false;
 		
 		// clear interface
 		notifyClearDisplay();
 	}
 	
 	private boolean tryToAppendToNumber(char c) {
-		if (!Character.isDigit(c))
-			return false;
+		boolean toReturn = false;
 		
-		notifyAppendString(String.valueOf(c));
-		numberBuffer.append(c);
-		return true;
+		if (c == '.' && !numberHasDot) {
+			if (numberBuffer.length() == 0) {
+				numberBuffer.append("0");
+				notifyAppendString("0");
+			}
+			
+			numberHasDot = true;
+			toReturn = true;
+		}
+		else
+			toReturn = Character.isDigit(c);	
+		
+		if (toReturn) {
+			numberBuffer.append(c);
+			notifyAppendString(String.valueOf(c));
+		}
+		
+		return toReturn;
 	}
 	
 	private double getNumberFromBuffer() {
 		double number = Double.valueOf(numberBuffer.toString());
 		numberBuffer.setLength(0);
+		numberHasDot = false;
 		
+		if (isNumberNegative)
+			number *= -1;
+
+		isNumberNegative = false;
 		return number;
 	}
 	
@@ -48,11 +78,19 @@ public class Model extends CalculatorObservable{
 		return (c == '+' || c == '-' || c == '*' || c == '/');
 	}
 	
-	
+	public void deleteDigit() {
+		int len = numberBuffer.length();
+		
+		if (len > 0) {
+			if (numberHasDot && numberBuffer.charAt(len - 1) == '.')
+				numberHasDot = false;
+			
+			numberBuffer.setLength(len - 1);
+			notifyDeleteChar();
+		}
+	}
 	
 	public void notifyInputChar(char triggerChar) {
-		
-		//treat meta keys
 		
 		switch (calculatorState) {
 			case WAITING_NUMBER:
@@ -81,6 +119,7 @@ public class Model extends CalculatorObservable{
 						System.out.println(triggerChar + " was stored as operator.");
 					}
 				}
+				
 				break;
 				
 			case INSERTING_OPERATOR:
@@ -134,8 +173,12 @@ public class Model extends CalculatorObservable{
 							operatorSlot = triggerChar;
 							calculatorState = States.INSERTING_OPERATOR;
 						}
-						else
+						else {
+							if (Math.signum(previousNumber) < 0)
+								isNumberNegative = true;
+							
 							calculatorState = States.FINISHED_OPERATION;
+						}
 					}
 				}
 				

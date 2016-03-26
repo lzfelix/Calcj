@@ -7,4 +7,5 @@ public interface CalculatorObserver {
 	public void deleteChar();
 	public void clearDisplay();
 	public void deleteOperator();
+	public void invertSignal(boolean isNegative);
 }
