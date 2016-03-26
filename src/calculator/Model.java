@@ -1,3 +1,4 @@
+package calculator;
 import calc_mvc.CalculatorObservable;
 
 public class Model extends CalculatorObservable{
