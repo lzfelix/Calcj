@@ -41,9 +41,8 @@ public class Calculator extends JFrame implements CalculatorObserver {
 	 */
 	private void makeLayout() {
 		
-		// http://stackoverflow.com/questions/24315757/java-align-jtextarea-to-the-right
-		// adding the display
 		display = new JTextArea(8, 25);
+		display.setEditable(false);
 		JScrollPane jsp = new JScrollPane(display);
 		jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

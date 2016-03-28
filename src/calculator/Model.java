@@ -1,7 +1,8 @@
 package calculator;
+import calc_mvc.CalculatorModel;
 import calc_mvc.CalculatorObservable;
 
-public class Model extends CalculatorObservable{
+public class Model extends CalculatorObservable implements CalculatorModel{
 	
 	private enum States {WAITING_NUMBER, INPUTING_1ST_NUMBER, INSERTING_OPERATOR, INSERTING_2ND_NUMBER, FINISHED_OPERATION};
 	private final char NO_OPERATOR = 'X';

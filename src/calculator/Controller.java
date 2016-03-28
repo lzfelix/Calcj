@@ -4,15 +4,17 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
+import calc_mvc.CalculatorModel;
+
 /**
  * A "Controller-Model" class to decouple the calculator's logic from its view.
  * @author lzfelix
  */
 public class Controller implements ActionListener{
 	
-	private Model model;
+	private CalculatorModel model;
 	
-	public void addModel(Model model) {
+	public void addModel(CalculatorModel model) {
 		this.model = model;
 	}
 	
