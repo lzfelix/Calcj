@@ -109,10 +109,8 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 			case WAITING_NUMBER:
 				// if it is a valid number (digit, inverse signal, valid dot), appends it to the buffer.
 				
-				if (tryToAppendToNumber(triggerChar)) {
-					System.out.println("Added " + triggerChar + ". Changing to INPUTING_1ST_NUMBER from WAITING_NUMBER.");
+				if (tryToAppendToNumber(triggerChar)) 
 					calculatorState = States.INPUTING_1ST_NUMBER;
-				}
 				
 				break;
 				
