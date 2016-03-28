@@ -41,6 +41,12 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 		notifyClearDisplay();
 	}
 	
+	/**
+	 * Checks if the incoming char is valid to form a number. If so, add it to the number buffer and set the
+	 * number flag <code>numberHasDot</code> properly.
+	 * @param c The char trying to be added to the number.
+	 * @return <code>true</code> if <code>c</code> was added successfully, <code>false</code> otherwise. 
+	 */
 	private boolean tryToAppendToNumber(char c) {
 		boolean toReturn = false;
 		
@@ -64,6 +70,11 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 		return toReturn;
 	}
 	
+	/**
+	 * Gets the number stored on the buffer, clearing it and its flags, making the buffer ready to start receiving
+	 * new digits to form the next number.
+	 * @return The stored number.
+	 */
 	private double getNumberFromBuffer() {
 		double number = Double.valueOf(numberBuffer.toString());
 		numberBuffer.setLength(0);
@@ -151,7 +162,6 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 				}
 				else {
 					if (triggerChar == '=' || validateOperator(triggerChar)) {
-						
 						double secondNumber = getNumberFromBuffer();
 						
 						notifyAddOperator('=');
@@ -170,6 +180,9 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 							notifyAppendString(String.valueOf("NaN"));
 						}
 						
+						// if the operation is taking place because a key different from = was pressed, right after
+						// showing the result of the operation, add this operator's symbol and prepare to either have
+						// it rewritten or to start receiving the second number.
 						if (triggerChar != '=') {
 							notifyAddOperator(triggerChar);
 							operatorSlot = triggerChar;
@@ -179,6 +192,8 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 							if (Math.signum(previousNumber) < 0)
 								isNumberNegative = true;
 							
+							// if the operation was completed because = was pressed, then different scenarios are possible.
+							// Move to a new state.
 							calculatorState = States.FINISHED_OPERATION;
 						}
 					}

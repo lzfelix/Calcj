@@ -107,11 +107,6 @@ public class Calculator extends JFrame implements CalculatorObserver {
 	// View pattern methods
 
 	@Override
-	public void appendLine(String s) {
-		display.append("\n" + s);
-	}
-
-	@Override
 	public void appendString(String s) {
 		display.append(String.valueOf(s));
 	}

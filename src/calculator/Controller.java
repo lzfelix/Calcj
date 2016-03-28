@@ -7,7 +7,7 @@ import javax.swing.JButton;
 import calc_mvc.CalculatorModel;
 
 /**
- * A "Controller-Model" class to decouple the calculator's logic from its view.
+ * The calculator's controller, as the class name implies :)
  * @author lzfelix
  */
 public class Controller implements ActionListener{
