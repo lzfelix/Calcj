@@ -1,6 +1,7 @@
 package tests;
 
 import calc_mvc.CalculatorObserver;
+import calculator.Model;
 
 /** 
  * This class wraps the CalculatorObserver, logging all the notifications usually sent to the view
@@ -18,9 +19,31 @@ public class TapeMachine implements CalculatorObserver{
 	public final char SIG_INV = 'S';
 	
 	private StringBuilder tape;
+	private Model calcModel;
 	
 	public TapeMachine() {
 		tape = new StringBuilder();
+		calcModel = new Model();
+		calcModel.subscribe(this);
+	}
+	
+	/**
+	 * Sends all the characters from this String to the calculator as actions.
+	 * Both [±] and [I] chars can be used to invert the signal of the digits. 
+	 * @param operations The sequence of operations to be sent to the calculator.
+	 */
+	public void performOperations(String operations) {
+		for (char c : operations.toCharArray()) {
+			
+			switch (c) {
+				case 'C': calcModel.notifyClearDisplay(); break;
+				case '<': calcModel.deleteDigit(); break;
+				case 'I':
+				case '±': calcModel.invertSignal(); break;
+				default:
+					calcModel.notifyInputChar(c);		
+			}
+		}
 	}
 	
 	/**
@@ -29,7 +52,11 @@ public class TapeMachine implements CalculatorObserver{
 	 */
 	public String getTapeText() {
 		String toReturn = tape.toString();
+		
+		// reset calculator and tape for the next operations.
+		calcModel.resetCalculator();
 		tape.setLength(0);
+		
 		return toReturn;
 	}
 	
