@@ -172,6 +172,10 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 								case '/': previousNumber /= secondNumber; break;
 							}
 							
+							// treats negative zero (-0.0) case, which happens on Double
+							if (previousNumber == 0.0)
+								previousNumber = 0.0;
+							
 							notifyAppendString(String.valueOf(previousNumber));
 						}
 						catch (Exception e) {

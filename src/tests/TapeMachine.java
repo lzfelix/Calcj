@@ -15,7 +15,7 @@ public class TapeMachine implements CalculatorObserver{
 
 	public final char SIG_DELETE = 'D';
 	public final char SIG_CLEAR = 'C'; 
-	public final char SIG_DEL_OP = 'O';
+	public final char SIG_DEL_OP = '<';
 	public final char SIG_INV = 'S';
 	
 	private StringBuilder tape;
@@ -74,23 +74,23 @@ public class TapeMachine implements CalculatorObserver{
 
 	@Override
 	public void deleteChar() {
-		tape.append("[D]");
+		tape.append(SIG_DELETE);
 	}
 
 	@Override
 	public void clearDisplay() {
-		tape.append("[C]");
+		tape.append(SIG_CLEAR);
 	}
 
 	@Override
 	public void deleteOperator() {
-		tape.append("[O]");
+		tape.append(SIG_DEL_OP);
 	}
 
 	@Override
 	public void invertSignal(boolean isNegative) {
 		char signal = (isNegative) ? '-' : '+';
-		tape.append("[S" + signal + "]");
+		tape.append("["+ SIG_INV + signal + "]");
 	}
 
 }
