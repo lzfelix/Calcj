@@ -34,9 +34,8 @@ public class TapeMachine implements CalculatorObserver{
 	 */
 	public void performOperations(String operations) {
 		for (char c : operations.toCharArray()) {
-			
 			switch (c) {
-				case 'C': calcModel.notifyClearDisplay(); break;
+				case 'C': calcModel.resetCalculator(); break;
 				case '<': calcModel.deleteDigit(); break;
 				case 'I':
 				case '±': calcModel.invertSignal(); break;

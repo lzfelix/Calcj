@@ -118,17 +118,12 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 				// if it is a valid number, still appends it to the buffer. If it is a valid operator, stores it and gets
 				// the number on the buffer.
 				
-				if (!tryToAppendToNumber(triggerChar)) {
-					System.out.println("Failed to append number, so it may be an operator. Changing to INSERTING_OPERATORS.");
+				if (!tryToAppendToNumber(triggerChar) && validateOperator(triggerChar)) {
+					previousNumber = getNumberFromBuffer();
+					operatorSlot = triggerChar;
+					calculatorState = States.INSERTING_OPERATOR;
 					
-					if (validateOperator(triggerChar)) {
-						previousNumber = getNumberFromBuffer();
-						operatorSlot = triggerChar;
-						calculatorState = States.INSERTING_OPERATOR;
-						
-						notifyAddOperator(triggerChar);
-						System.out.println(triggerChar + " was stored as operator.");
-					}
+					notifyAddOperator(triggerChar);
 				}
 				
 				break;
@@ -137,16 +132,15 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 				// if it is a valid operator, replaces the stored one. If it's a number, change state.
 				
 				if (validateOperator(triggerChar)) {
-					System.out.println("The previous operator was replaced by " + triggerChar);
 					operatorSlot = triggerChar;
 					
 					notifyDeleteOperator();
 					notifyAddOperator(triggerChar);
 				}
-				else if (tryToAppendToNumber(triggerChar)) {
-					System.out.println("Received a number, transited to INSERTING_2ND_NUMBER");
-					calculatorState = States.INSERTING_2ND_NUMBER; 
-				}
+				else 
+					if (tryToAppendToNumber(triggerChar)) 
+						calculatorState = States.INSERTING_2ND_NUMBER; 
+				
 				break;
 				
 			case INSERTING_2ND_NUMBER:
@@ -155,10 +149,7 @@ public class Model extends CalculatorObservable implements CalculatorModel{
 				// if it is another operator, performs the previous operation as if a = was pressed and already add
 				// this new operator to the slot, so the user can input just the second number.
 				
-				if (tryToAppendToNumber(triggerChar)) {
-					System.out.println("Appended number " + triggerChar + ". Keeping on INSERTING_2ND_NUMBER.");
-				}
-				else {
+				if (!tryToAppendToNumber(triggerChar)) {
 					if (triggerChar == '=' || validateOperator(triggerChar)) {
 						double secondNumber = getNumberFromBuffer();
 						
