@@ -2,15 +2,21 @@ package calculator;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
+import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.BadLocationException;
 
+import calc_mvc.CalculatorController;
 import calc_mvc.CalculatorObserver;
 
 /**
@@ -20,9 +26,14 @@ import calc_mvc.CalculatorObserver;
 @SuppressWarnings("serial")
 public class Calculator extends JFrame implements CalculatorObserver {
 	private JTextArea display;	
-	private Controller controller;
+	private CalculatorController controller;
 
-	public Calculator(Controller controller) {
+	public static final char CHAR_EQUALS = (char)KeyEvent.VK_ENTER;
+	public static final char CHAR_DELETE = (char)KeyEvent.VK_BACK_SPACE;
+	public static final char CHAR_CLEAR = (char)KeyEvent.VK_ESCAPE;
+	public static final char CHAR_SIGNAL = 'i';
+	
+	public Calculator(CalculatorController controller) {
 		super("Calculator");
 		
 		setLayout(new BorderLayout());
@@ -46,6 +57,10 @@ public class Calculator extends JFrame implements CalculatorObserver {
 		JScrollPane jsp = new JScrollPane(display);
 		jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		// Removes KeyMap from the TextArea, so the keyboard events are captured regardless of the focused element
+		display.setKeymap(null);
+		
 		add(jsp, BorderLayout.NORTH);
 		
 		JPanel pnlButtons = new JPanel(new GridBagLayout());
@@ -88,8 +103,50 @@ public class Calculator extends JFrame implements CalculatorObserver {
 			gbc.gridy++;
 		}
 		
+		setKeyboardBindings(pnlButtons);
+		
 		// adding the buttons panel to the layout.
 		add(pnlButtons, BorderLayout.SOUTH);
+	}
+	
+	/**
+	 * Installs shortcuts to all calculators buttons. This is done via KeyBindings, so the shortcuts can be
+	 * used regardless of the focus inside the frame. 
+	 * @param containerPanel The panel containing the buttons.
+	 */
+	private void setKeyboardBindings(JPanel containerPanel) {
+		for (int i = 0; i < 10; i++) 
+			installKeyBinding(containerPanel, "PressBtn" + i, KeyStroke.getKeyStroke(Integer.toString(i).charAt(0)), this.controller);
+		
+		installKeyBinding(containerPanel, "Delete", KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), this.controller);
+		installKeyBinding(containerPanel, "EnterAsEquals", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), this.controller);
+		installKeyBinding(containerPanel, "Equals", KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0), this.controller);
+		installKeyBinding(containerPanel, "ClearAll", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), this.controller);
+		installKeyBinding(containerPanel, "InvertSignal", KeyStroke.getKeyStroke('i'), this.controller);
+		installKeyBinding(containerPanel, "InvertSignal", KeyStroke.getKeyStroke('I'), this.controller);
+		installKeyBinding(containerPanel, "Dot", KeyStroke.getKeyStroke('.'), this.controller);
+
+		installKeyBinding(containerPanel, "OperandAdd", KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.SHIFT_MASK), this.controller);
+		installKeyBinding(containerPanel, "OperandMinus", KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), this.controller);
+		installKeyBinding(containerPanel, "OperandDivide", KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), this.controller);
+		installKeyBinding(containerPanel, "OperandMultiply", KeyStroke.getKeyStroke(KeyEvent.VK_ASTERISK, InputEvent.SHIFT_MASK), this.controller);
+		
+		// sets the class (which extends JFrame) as focusable, so inputs such as Backspace are also captured by the KeyBinding
+		setFocusable(true);
+		requestFocus();
+	}
+
+	/**
+	 * Maps a keybinding to a specific action.
+	 * @param targetComponent The frame which the InputMap will be used.
+	 * @param actionName The name of the action, used internally only. You must ensure that two distinct actions
+	 * have distinct names.
+	 * @param keyStroke The keystroke that is going to trigger the desired action.
+	 * @param actionPerformed An object that performs such action/s.
+	 */
+	private void installKeyBinding(JComponent targetComponent, String actionName, KeyStroke keyStroke, Action actionPerformed) {
+		targetComponent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, actionName);
+		targetComponent.getActionMap().put(actionName, actionPerformed);
 	}
 	
 	/**

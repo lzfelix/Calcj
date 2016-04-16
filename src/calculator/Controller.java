@@ -1,16 +1,17 @@
 package calculator;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
+import calc_mvc.CalculatorController;
 import calc_mvc.CalculatorModel;
 
 /**
  * The calculator's controller, as the class name implies :)
  * @author lzfelix
  */
-public class Controller implements ActionListener{
+@SuppressWarnings("serial")
+public class Controller extends CalculatorController{
 	
 	private CalculatorModel model;
 	
@@ -19,8 +20,22 @@ public class Controller implements ActionListener{
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		char triggerChar = ((JButton)e.getSource()).getText().charAt(0);
+	public void actionPerformed(ActionEvent e) {	
+		char triggerChar;
+		
+		if (e.getSource() instanceof JButton)		
+			triggerChar = ((JButton)e.getSource()).getText().charAt(0);
+		else  {
+			System.out.println(">"+e.getActionCommand()+">");
+			triggerChar = e.getActionCommand().charAt(0);
+			
+			switch (triggerChar) {
+				case Calculator.CHAR_CLEAR: triggerChar = 'C'; break;
+				case Calculator.CHAR_EQUALS: triggerChar = '='; break;
+				case Calculator.CHAR_DELETE: triggerChar = '<'; break;
+				case Calculator.CHAR_SIGNAL: triggerChar = '±'; break;
+			}
+		}
 		
 		switch (triggerChar) {
 			case 'C': model.resetCalculator(); break;
@@ -30,4 +45,6 @@ public class Controller implements ActionListener{
 				model.notifyInputChar(triggerChar);
 		}
 	}
+	
+	
 }
