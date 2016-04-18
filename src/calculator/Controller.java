@@ -26,7 +26,6 @@ public class Controller extends CalculatorController{
 		if (e.getSource() instanceof JButton)		
 			triggerChar = ((JButton)e.getSource()).getText().charAt(0);
 		else  {
-			System.out.println(">"+e.getActionCommand()+">");
 			triggerChar = e.getActionCommand().charAt(0);
 			
 			switch (triggerChar) {

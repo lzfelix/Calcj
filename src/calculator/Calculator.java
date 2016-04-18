@@ -123,7 +123,7 @@ public class Calculator extends JFrame implements CalculatorObserver {
 		installKeyBinding(containerPanel, "Equals", KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0), this.controller);
 		installKeyBinding(containerPanel, "ClearAll", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), this.controller);
 		installKeyBinding(containerPanel, "InvertSignal", KeyStroke.getKeyStroke('i'), this.controller);
-		installKeyBinding(containerPanel, "InvertSignal", KeyStroke.getKeyStroke('I'), this.controller);
+		installKeyBinding(containerPanel, "InvertSignal2", KeyStroke.getKeyStroke('I'), this.controller);
 		installKeyBinding(containerPanel, "Dot", KeyStroke.getKeyStroke('.'), this.controller);
 
 		installKeyBinding(containerPanel, "OperandAdd", KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.SHIFT_MASK), this.controller);
